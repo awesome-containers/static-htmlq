@@ -1,0 +1,31 @@
+# https://github.com/awesome-containers/static-curl
+ARG STATIC_CURL_VERSION=8.0.1
+ARG STATIC_CURL_IMAGE=ghcr.io/awesome-containers/static-curl
+
+# https://github.com/awesome-containers/static-htmlq
+ARG STATIC_HTMLQ_VERSION=3.10
+ARG STATIC_HTMLQ_IMAGE=ghcr.io/awesome-containers/static-htmlq
+
+# https://github.com/awesome-containers/alpine-build-essential
+ARG BUILD_ESSENTIAL_VERSION=3.17
+ARG BUILD_ESSENTIAL_IMAGE=ghcr.io/awesome-containers/alpine-build-essential
+
+
+FROM $STATIC_CURL_IMAGE:$STATIC_CURL_VERSION-slim AS static-curl
+FROM $STATIC_HTMLQ_IMAGE:$STATIC_HTMLQ_VERSION AS static-htmlq
+FROM $BUILD_ESSENTIAL_IMAGE:$BUILD_ESSENTIAL_VERSION AS build
+
+WORKDIR /src/htmlq
+COPY --from=static-htmlq /bin/htmlq ./
+
+RUN set -xeu; \
+    upx --no-progress --no-color htmlq; \
+    upx -t --no-progress --no-color htmlq; \
+    chmod -cR 755 htmlq; \
+    chown -cR 0:0 htmlq; \
+    ! ldd htmlq && :; \
+    ./htmlq -V
+
+# slim static htmlq image
+FROM static-curl
+COPY --from=build /src/htmlq/htmlq/ /bin/
