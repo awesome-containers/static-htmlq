@@ -30,12 +30,11 @@ RUN set -xeu; \
 
 WORKDIR /src/htmlq/target/x86_64-unknown-linux-musl/release
 RUN set -xeu; \
-    ls -lah htmlq; \
     strip -s -R .comment --strip-unneeded htmlq; \
-    ls -lah htmlq; \
     chmod -cR 755 htmlq; \
     chown -cR 0:0 htmlq; \
-    ldd htmlq
+    ldd htmlq; \
+    ./htmlq -V
 
 # static htmlq image
 FROM static-curl
